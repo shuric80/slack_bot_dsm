@@ -25,7 +25,25 @@ async def handle_app_mention(body, say, logger):
 @app.message("ping")
 async def handle_pong(message, say):
     user = message['user']
-    await  say(f"Hi there, <@{user}>!")
+    blocks = [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"Hey there <@{message['user']}>!"},
+            "accessory": {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "Click Me"},
+                "action_id": "button_click"
+            }
+        }
+    ]
+    await say(blocks=blocks, text=f"Hi there, <@{user}>!")
+
+
+@app.action("button_click")
+async def action_button_click(body, ack, say):
+    # Acknowledge the action
+    await ack()
+    await say(f"<@{body['user']['id']}> clicked the button")
 
 
 @app.command("/start")
@@ -54,4 +72,9 @@ async def oauth_redirect(request: Request):
 
 @api.post('/slack/start')
 async def start(request: Request):
+    return await app_handler.handle(request)
+
+
+@api.post('/slack/message_action')
+async def message_action(request: Request):
     return await app_handler.handle(request)
