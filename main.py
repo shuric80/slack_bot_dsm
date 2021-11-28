@@ -1,8 +1,6 @@
 import logging
-import re
 
 from fastapi import FastAPI, Request
-from icecream import ic
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,21 +17,15 @@ async def handle_app_mention(body, say, logger):
     await say('What up?')
 
 
-@app.event("message")
-async def handle_message():
-    pass
+# @app.event("message")
+# async def handle_message_events(body, logger):
+#     logger.info(body)
 
 
-@app.event("reaction_added")
-async def reaction(body, say, logger):
-    await say("Kuku")
-
-
-@app.message(re.compile("(hi|hello|hey)"))
-async def ping(message, say):
-    ic(message)
+@app.message("ping")
+async def handle_pong(message, say):
     user = message['user']
-    say(f"Hi there, <@{user}>!")
+    await  say(f"Hi there, <@{user}>!")
 
 
 @app.command("/start")
