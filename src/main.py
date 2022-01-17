@@ -1,4 +1,5 @@
 import logging
+import os
 import secrets
 from typing import Dict
 
@@ -13,7 +14,8 @@ logging.basicConfig(level=logging.DEBUG)
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
-app = AsyncApp()
+app = AsyncApp(token=os.environ.get("SLACK_BOT_TOKEN"),
+               signing_secret=os.environ.get("SLACK_SIGNING_SECRET"))
 app_handler = AsyncSlackRequestHandler(app)
 
 redis = aioredis.from_url(settings.REDIS.HOST, decode_responses=True)
@@ -39,7 +41,8 @@ def extract_channel_and_message(body: Dict) -> Dict:
 
 async def make_ui(title, is_hidden=True):
     users = await get_all_users(title)
-    users = {user: ':see_no_evil:' for user in users.keys()} if is_hidden else users
+    users = {user: ':see_no_evil:'
+             for user in users.keys()} if is_hidden else users
     ui = ui_scrum_pocker(title, users)
     return ui
 
@@ -53,8 +56,14 @@ async def handle_message_events(body, logger):
 async def handle_select_action(ack, body, client, logger):
     await ack()
     username = body["user"]["name"]
-    value = [action['selected_option']['value'] for action in body['actions'] if 'selected_option' in action][0]
-    title = [item['text']['text'] for item in body['message']['blocks'] if 'header' in item['type']][0]
+    value = [
+        action['selected_option']['value'] for action in body['actions']
+        if 'selected_option' in action
+    ][0]
+    title = [
+        item['text']['text'] for item in body['message']['blocks']
+        if 'header' in item['type']
+    ][0]
     await add_user(title, username, value)
     ui = await make_ui(title)
     channel, message_ts = extract_channel_and_message(body)
@@ -67,7 +76,10 @@ async def handle_select_action(ack, body, client, logger):
 @app.action("action_click")
 async def handle_some_action(ack, body, client, logger):
     await ack()
-    title = [item['text']['text'] for item in body['message']['blocks'] if 'header' in item['type']][0]
+    title = [
+        item['text']['text'] for item in body['message']['blocks']
+        if 'header' in item['type']
+    ][0]
     users = await get_all_users(title)
     is_hidden = True
     if body['user']['name'] in users.keys():

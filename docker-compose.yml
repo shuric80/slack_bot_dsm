@@ -1,6 +1,18 @@
 version: "3.3"
 services:
-  redis:
+  db:
+    container_name: 'redis-db'
     image: redis:latest
+    restart: unless-stopped
+    env_file:
+      - .env.production
+  app:
+    container_name: 'slack_bot'
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    links:
+      - db
     ports:
-      - "6379:6379"
+      - "3000:3000"
+

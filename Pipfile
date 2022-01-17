@@ -9,10 +9,10 @@ slack-sdk = "*"
 slack-bolt = "*"
 aioredis = "*"
 dynaconf = "*"
+uvicorn = "*"
+aiohttp = "*"
 
 [dev-packages]
-uvicorn = "*"
-
 
 [requires]
 python_version = "3.8"

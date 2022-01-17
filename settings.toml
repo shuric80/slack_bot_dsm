@@ -2,7 +2,7 @@
 debug = true
 
 [staging]
-redis = { host = 'redis', ttl = 180, dynaconf_merge = true }
+redis = { host = 'redis://db:6379', ttl = 180, dynaconf_merge = true }
 
 [testing]
 
