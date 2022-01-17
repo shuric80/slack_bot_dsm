@@ -1,0 +1,12 @@
+[default]
+debug = true
+
+[staging]
+redis = { host = 'redis', ttl = 180, dynaconf_merge = true }
+
+[testing]
+
+[production]
+
+[development]
+redis = { host = "redis://localhost", ttl = 180, dynaconf_merge = true }

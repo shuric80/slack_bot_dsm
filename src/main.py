@@ -3,9 +3,10 @@ import secrets
 from typing import Dict
 
 import aioredis
+from dynaconf import settings
 from fastapi import FastAPI, Request
 
-from templates import ui_scrum_pocker, ui_elections, ui_elections_result
+from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -15,13 +16,13 @@ from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 app = AsyncApp()
 app_handler = AsyncSlackRequestHandler(app)
 
-redis = aioredis.from_url("redis://localhost", decode_responses=True)
+redis = aioredis.from_url(settings.REDIS.HOST, decode_responses=True)
 
 
 async def add_user(context_id: str, username: str, value: str) -> None:
     async with redis.client() as conn:
         await conn.hset(context_id, mapping={f"{username}": f"{value}"})
-        await conn.expire(context_id, 60)
+        await conn.expire(context_id, settings.redis.ttl)
 
 
 async def get_all_users(context_id: str) -> Dict:

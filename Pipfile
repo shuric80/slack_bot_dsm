@@ -7,12 +7,12 @@ name = "pypi"
 fastapi = "*"
 slack-sdk = "*"
 slack-bolt = "*"
-aiohttp = "*"
 aioredis = "*"
+dynaconf = "*"
 
 [dev-packages]
 uvicorn = "*"
-black = "*"
+
 
 [requires]
 python_version = "3.8"
