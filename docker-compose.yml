@@ -4,10 +4,10 @@ services:
     container_name: 'redis-db'
     image: redis:latest
     restart: unless-stopped
-    env_file:
-      - .env.production
   app:
     container_name: 'slack_bot'
+    env_file:
+      - .env.production
     build:
       context: ./
       dockerfile: Dockerfile

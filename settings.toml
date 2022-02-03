@@ -7,6 +7,9 @@ redis = { host = 'redis://db:6379', ttl = 180, dynaconf_merge = true }
 [testing]
 
 [production]
+debug = false
+log = { level = 'ERROR' }
 
 [development]
 redis = { host = "redis://localhost", ttl = 180, dynaconf_merge = true }
+log = { level = 'DEBUG' }
