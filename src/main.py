@@ -1,5 +1,4 @@
 import logging
-import os
 import secrets
 from typing import Dict
 
@@ -7,12 +6,15 @@ import aioredis as aioredis
 from dynaconf import settings
 from fastapi import FastAPI, Request
 from slack_bolt import BoltResponse
-from slack_bolt.oauth.async_callback_options import AsyncSuccessArgs, AsyncFailureArgs
+from slack_bolt.oauth.async_callback_options import AsyncSuccessArgs, AsyncFailureArgs, AsyncCallbackOptions
+from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
-LEVEL = logging.DEBUG if settings.LOG.LEVEL == 'DEBUG' else logging.ERROR
-logging.basicConfig(level=LEVEL)
+# LEVEL = logging.DEBUG if settings.LOG.LEVEL == 'DEBUG' else logging.ERROR
+logging.basicConfig(level=logging.DEBUG)
 
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
@@ -29,26 +31,24 @@ async def failure(args: AsyncFailureArgs) -> BoltResponse:
     return BoltResponse(status=args.suggested_status_code, body="Failure")
 
 
-# callback_options = AsyncCallbackOptions(success=success, failure=failure)
+callback_options = AsyncCallbackOptions(success=success, failure=failure)
 
-# oauth_settings = AsyncOAuthSettings(
-#     client_id=os.environ["SLACK_CLIENT_ID"],
-#     client_secret=os.environ["SLACK_CLIENT_SECRET"],
-#     scopes=["chat:write", "commands"],
-#     user_scopes=[],
-#     redirect_uri=None,
-#     install_path='/slack/install',
-#     redirect_uri_path='/slack/oauth_redirect',
-#     callback_options=callback_options,
-#     state_store=FileOAuthStateStore(expiration_seconds=600))
+oauth_settings = AsyncOAuthSettings(
+    client_id=settings.SLACK_CLIENT_ID,
+    client_secret=settings.SLACK_CLIENT_SECRET,
+    scopes=["chat:write", "commands"],
+    user_scopes=[],
+    redirect_uri=None,
+    install_path='/slack/install',
+    redirect_uri_path='/slack/oauth_redirect',
+    callback_options=callback_options,
+    state_store=FileOAuthStateStore(expiration_seconds=600))
 
-SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
-SLACK_SIGNED_SECRET = os.environ.get('SLACK_SIGNED_SECRET')
 app = AsyncApp(
-    # oauth_settings=oauth_settings,
-    # installation_store=FileInstallationStore(),
-    token=SLACK_BOT_TOKEN,
-    signing_secret=SLACK_SIGNED_SECRET,
+    oauth_settings=oauth_settings,
+    installation_store=FileInstallationStore(),
+    # token=SLACK_BOT_TOKEN,
+    signing_secret=settings.SLACK_SIGNED_SECRET,
 )
 
 app_handler = AsyncSlackRequestHandler(app)
