@@ -3,14 +3,12 @@ import os
 import secrets
 from typing import Dict
 
-import aioredis
+import aioredis as aioredis
 from dynaconf import settings
 from fastapi import FastAPI, Request
 from slack_bolt import BoltResponse
-from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
-from slack_sdk.oauth.installation_store import FileInstallationStore
-from slack_sdk.oauth.state_store import FileOAuthStateStore,
-from slack_bolt.oauth.callback_options import CallbackOptions, SuccessArgs, FailureArgs
+from slack_bolt.oauth.async_callback_options import AsyncSuccessArgs, AsyncFailureArgs
+
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
 LEVEL = logging.DEBUG if settings.LOG.LEVEL == 'DEBUG' else logging.ERROR
@@ -20,35 +18,38 @@ from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
 
-def success(args: SuccessArgs) -> BoltResponse:
+async def success(args: AsyncSuccessArgs) -> BoltResponse:
     assert args.request is not None
     return BoltResponse(status=200, body='Success')
 
 
-def failure(args: FailureArgs) -> BoltResponse:
+async def failure(args: AsyncFailureArgs) -> BoltResponse:
     assert args.request is not None
     assert args.reason is not None
     return BoltResponse(status=args.suggested_status_code, body="Failure")
 
 
-callback_options = CallbackOptions(success=success, failure=failure)
+# callback_options = AsyncCallbackOptions(success=success, failure=failure)
 
-oauth_settings = AsyncOAuthSettings(
-    client_id=os.environ["SLACK_CLIENT_ID"],
-    client_secret=os.environ["SLACK_CLIENT_SECRET"],
-    scopes=["chat:write", "commands"],
-    user_scopes=[],
-    redirect_uri=None,
-    install_path='/slack/install',
-    redirect_uri_path='/slack/oauth_redirect',
-    callback_options=callback_options,
-    state_store=FileOAuthStateStore(expiration_seconds=600,
-                                    base_dir="./data/states"))
+# oauth_settings = AsyncOAuthSettings(
+#     client_id=os.environ["SLACK_CLIENT_ID"],
+#     client_secret=os.environ["SLACK_CLIENT_SECRET"],
+#     scopes=["chat:write", "commands"],
+#     user_scopes=[],
+#     redirect_uri=None,
+#     install_path='/slack/install',
+#     redirect_uri_path='/slack/oauth_redirect',
+#     callback_options=callback_options,
+#     state_store=FileOAuthStateStore(expiration_seconds=600))
 
+SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
+SLACK_SIGNED_SECRET = os.environ.get('SLACK_SIGNED_SECRET')
 app = AsyncApp(
-    oauth_settings=oauth_settings,
-    installation_store=FileInstallationStore(base_dir="./data/installations"),
-    signing_secret=os.environ.get("SLACK_SIGNING_SECRET"))
+    # oauth_settings=oauth_settings,
+    # installation_store=FileInstallationStore(),
+    token=SLACK_BOT_TOKEN,
+    signing_secret=SLACK_SIGNED_SECRET,
+)
 
 app_handler = AsyncSlackRequestHandler(app)
 
@@ -125,8 +126,8 @@ async def handle_some_action(ack, body, client, logger):
                              blocks=ui["blocks"])
 
 
-@app.command("/election")
-async def handler_start_command(ack, body, respond, logger):
+@app.command("/choise")
+async def handler_choise_command(ack, body, respond, logger):
     await ack()
     logger.info(body)
     ui = ui_elections()
@@ -193,13 +194,13 @@ async def install(request: Request):
     return await app_handler.handle(request)
 
 
-@api.post("/slack/oauth_redirect")
+@api.get("/slack/auth")
 async def oauth_redirect(request: Request):
     return await app_handler.handle(request)
 
 
-@api.post("/slack/election")
-async def start(request: Request):
+@api.post("/slack/choise")
+async def choise(request: Request):
     return await app_handler.handle(request)
 
 
