@@ -5,11 +5,7 @@ from typing import Dict
 import aioredis as aioredis
 from dynaconf import settings
 from fastapi import FastAPI, Request
-from slack_bolt import BoltResponse
-from slack_bolt.oauth.async_callback_options import AsyncSuccessArgs, AsyncFailureArgs, AsyncCallbackOptions
-from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
-from slack_sdk.oauth.installation_store import FileInstallationStore
-from slack_sdk.oauth.state_store import FileOAuthStateStore
+from slack_bolt.oauth.async_oauth_flow import AsyncOAuthFlow
 
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
@@ -19,35 +15,13 @@ logging.basicConfig(level=logging.DEBUG)
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
-
-async def success(args: AsyncSuccessArgs) -> BoltResponse:
-    assert args.request is not None
-    return BoltResponse(status=200, body='Success')
-
-
-async def failure(args: AsyncFailureArgs) -> BoltResponse:
-    assert args.request is not None
-    assert args.reason is not None
-    return BoltResponse(status=args.suggested_status_code, body="Failure")
-
-
-callback_options = AsyncCallbackOptions(success=success, failure=failure)
-
-oauth_settings = AsyncOAuthSettings(
-    client_id=settings.SLACK_CLIENT_ID,
-    client_secret=settings.SLACK_CLIENT_SECRET,
-    scopes=["chat:write", "commands"],
-    user_scopes=[],
-    redirect_uri=None,
-    install_path='/slack/install',
-    redirect_uri_path='/slack/oauth_redirect',
-    callback_options=callback_options,
-    state_store=FileOAuthStateStore(expiration_seconds=600))
-
 app = AsyncApp(
-    oauth_settings=oauth_settings,
-    installation_store=FileInstallationStore(),
-    # token=SLACK_BOT_TOKEN,
+    oauth_flow=AsyncOAuthFlow.sqlite3(
+        database='base.sql',
+        client_id=settings.SLACK_CLIENT_ID,
+        client_secret=settings.SLACK_CLIENT_SECRET,
+    ),
+    token=settings.SLACK_BOT_TOKEN,
     signing_secret=settings.SLACK_SIGNED_SECRET,
 )
 
@@ -126,8 +100,8 @@ async def handle_some_action(ack, body, client, logger):
                              blocks=ui["blocks"])
 
 
-@app.command("/choise")
-async def handler_choise_command(ack, body, respond, logger):
+@app.command("/event")
+async def handler_event_command(ack, body, respond, logger):
     await ack()
     logger.info(body)
     ui = ui_elections()
@@ -194,12 +168,12 @@ async def install(request: Request):
     return await app_handler.handle(request)
 
 
-@api.get("/slack/auth")
+@api.get("/slack/oauth_redirect")
 async def oauth_redirect(request: Request):
     return await app_handler.handle(request)
 
 
-@api.post("/slack/choise")
+@api.post("/slack/event")
 async def choise(request: Request):
     return await app_handler.handle(request)
 
