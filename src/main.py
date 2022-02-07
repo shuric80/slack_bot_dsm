@@ -110,8 +110,8 @@ async def handle_some_action(ack, body, client, logger):
                              blocks=ui["blocks"])
 
 
-@app.command("/event")
-async def handler_event_command(ack, body, respond, logger):
+@app.command("/dsm")
+async def handler_dsm_command(ack, body, respond, logger):
     await ack()
     logger.info(body)
     ui = ui_elections()
@@ -183,8 +183,8 @@ async def oauth_redirect(request: Request):
     return await app_handler.handle(request)
 
 
-@api.post("/slack/event")
-async def choise(request: Request):
+@api.post("/slack/dsm")
+async def event(request: Request):
     return await app_handler.handle(request)
 
 
