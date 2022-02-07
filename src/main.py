@@ -3,11 +3,21 @@ import secrets
 from typing import Dict
 
 import aioredis as aioredis
-from dynaconf import settings
+from dynaconf import Validator, settings
 from fastapi import FastAPI, Request
 from slack_bolt.oauth.async_oauth_flow import AsyncOAuthFlow
 
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
+
+settings.validators.register(
+    Validator("SLACK_CLIENT_ID",
+              "SLACK_CLIENT_SECRET",
+              "SLACK_SIGNED_SECRET",
+              must_exist=True),
+    Validator("REDIS", must_exist=True),
+)
+
+settings.validators.validate()
 
 # LEVEL = logging.DEBUG if settings.LOG.LEVEL == 'DEBUG' else logging.ERROR
 logging.basicConfig(level=logging.DEBUG)

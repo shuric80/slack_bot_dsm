@@ -6,4 +6,4 @@ COPY . /slack
 
 RUN python -m pip install --upgrade pip && pip install --no-cache-dir --upgrade -r /slack/requirements.txt
 
-CMD ["uvicorn", "src.main:api", "--host", "0.0.0.0", "--reload", "--log-level error", "--port", "3000"]
+CMD ["uvicorn", "src.main:api", "--host", "0.0.0.0", "--reload", "--port", "3000"]
