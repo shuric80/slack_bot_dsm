@@ -36,7 +36,7 @@ redis = aioredis.from_url(settings.REDIS.HOST, decode_responses=True)
 async def add_user(context_id: str, username: str, value: str) -> None:
     async with redis.client() as conn:
         await conn.hset(context_id, mapping={f"{username}": f"{value}"})
-        await conn.expire(context_id, settings.redis.ttl)
+        await conn.expire(context_id, settings.REDIS.TTL)
 
 
 async def get_all_users(context_id: str) -> Dict:
