@@ -1,8 +1,8 @@
-version: "3.3"
+version: "2"
 services:
   db:
     container_name: 'redis-db'
-    image: redis:latest
+    image: redis:6.0-alpine
     restart: unless-stopped
   app:
     container_name: 'slack_bot'

@@ -1,0 +1,19 @@
+[default]
+debug = true
+
+[default.redis]
+host = "redis://localhost"
+ttl = 180
+dynaconf_merge = true
+
+[testing]
+
+[production]
+debug = false
+
+[production.log]
+level = "ERROR"
+
+[development]
+debug = true
+
