@@ -20,12 +20,12 @@ fastapi==0.72.0
 frozenlist==1.2.0; python_version >= '3.6'
 h11==0.12.0; python_version >= '3.6'
 idna==3.3; python_version >= '3.5'
-multidict==5.2.0; python_version >= '3.6'
+multidict==6.0.2; python_version >= '3.6'
 pydantic==1.9.0; python_full_version >= '3.6.1'
 slack-bolt==1.11.1
-slack-sdk==3.13.0
+slack-sdk==3.14.0
 sniffio==1.2.0; python_version >= '3.5'
 starlette==0.17.1; python_version >= '3.6'
 typing-extensions==4.0.1; python_version >= '3.6'
-uvicorn==0.17.0
+uvicorn==0.17.4
 yarl==1.7.2; python_version >= '3.6'
