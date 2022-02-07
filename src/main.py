@@ -5,7 +5,6 @@ from typing import Dict
 import aioredis as aioredis
 from dynaconf import Validator, settings
 from fastapi import FastAPI, Request
-from slack_bolt.oauth.async_oauth_flow import AsyncOAuthFlow
 
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
@@ -19,18 +18,12 @@ settings.validators.register(
 
 settings.validators.validate()
 
-# LEVEL = logging.DEBUG if settings.LOG.LEVEL == 'DEBUG' else logging.ERROR
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
 app = AsyncApp(
-    oauth_flow=AsyncOAuthFlow.sqlite3(
-        database='base.sql',
-        client_id=settings.SLACK_CLIENT_ID,
-        client_secret=settings.SLACK_CLIENT_SECRET,
-    ),
     token=settings.SLACK_BOT_TOKEN,
     signing_secret=settings.SLACK_SIGNED_SECRET,
 )
@@ -168,7 +161,7 @@ async def command_poker(ack, body, say, command):
 api = FastAPI()
 
 
-@api.post("/slack/events")
+@api.post("/slack/event")
 async def endpoint(request: Request):
     return await app_handler.handle(request)
 

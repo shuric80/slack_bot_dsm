@@ -1,10 +1,6 @@
 [default]
 debug = true
-
-[default.redis]
-host = "redis://localhost"
-ttl = 180
-dynaconf_merge = true
+redis = { host = 'redis://db:6379', ttl = 180, dynaconf_merge = true }
 
 [testing]
 
