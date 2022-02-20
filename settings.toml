@@ -1,15 +1,16 @@
 [default]
 debug = true
-redis = { host = 'redis://db:6379', ttl = 180, dynaconf_merge = true }
 
 [testing]
 
 [production]
 debug = false
+redis = { host = 'redis://db:6379', ttl = 180, dynaconf_merge = true }
 
 [production.log]
 level = "ERROR"
 
 [development]
 debug = true
-
+log = { level = 'DEBUG' }
+redis = { host = 'redis://127.0.0.1:6379', ttl = 180, dynaconf_merge = true }

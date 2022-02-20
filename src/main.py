@@ -20,8 +20,11 @@ settings.validators.register(
 )
 
 settings.validators.validate()
-
-logging.basicConfig(level=logging.DEBUG)
+level = settings.LOG.LEVEL
+if level == 'ERROR':
+    logging.basicConfig(level=logging.ERROR)
+else:
+    logging.basicConfig(level=logging.DEBUG)
 
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
