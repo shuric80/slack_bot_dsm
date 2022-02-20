@@ -5,6 +5,9 @@ from typing import Dict
 import aioredis as aioredis
 from dynaconf import Validator, settings
 from fastapi import FastAPI, Request
+from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
 
 from src.templates import ui_scrum_pocker, ui_elections, ui_elections_result
 
@@ -18,15 +21,21 @@ settings.validators.register(
 
 settings.validators.validate()
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.DEBUG)
 
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
-app = AsyncApp(
-    token=settings.SLACK_BOT_TOKEN,
-    signing_secret=settings.SLACK_SIGNED_SECRET,
-)
+oauth_settings = AsyncOAuthSettings(
+    client_id=settings.SLACK_CLIENT_ID,
+    client_secret=settings.SLACK_CLIENT_SECRET,
+    scopes=['chat:write', 'commands', 'im:history'],
+    installation_store=FileInstallationStore(base_dir='./data/installations'),
+    state_store=FileOAuthStateStore(expiration_seconds=600,
+                                    base_dir="./data/states"))
+
+app = AsyncApp(signing_secret=settings.SLACK_SIGNED_SECRET,
+               oauth_settings=oauth_settings)
 
 app_handler = AsyncSlackRequestHandler(app)
 
